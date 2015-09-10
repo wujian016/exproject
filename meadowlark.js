@@ -2,9 +2,15 @@ var express = require('express');
 var app = express();
 app.set('port',process.env.PORT || 3000);
 
-app.use('/',function(req, res) {
+
+app.get('/',function(req, res) {
 	res.type('text/plain');
 	res.send('Markdowlark Travel');
+});
+
+app.get('/about',function(err, res) {
+	res.type('text/plain');
+	res.send('About meadowlark Travel');
 });
 
 app.use(function(req, res) {
