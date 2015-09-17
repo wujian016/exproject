@@ -1,0 +1,26 @@
+<ul>
+	{{#each tours}}
+	{{! rosce is test}}
+	<li>
+		{{name}} - {{price}}
+		{{#if ../currencies}}
+		{{{../../currency.abbrev}}}
+		{{/if}}
+	</li>
+	{{/each}}
+	{{#unless currencies}}
+	<p>All prices in {{currency.name}}</p>
+	{{/unless}}
+	{{#if specialsUrl}}
+	<p>Please check our <a href="{{specialsUrl}}">specials!</a></p>
+	{{else}}
+	<p>Please check back often for specials.</p>
+	{{/if}}
+	<p>
+		{{#each currencies}}
+		<a href="#" class="currency">{{.}}</a>
+		{{else}}
+		Unfortunately, we currently only accept {{currency.name}}.
+		{{/each}}
+	</p>
+</ul>
