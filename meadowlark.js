@@ -12,14 +12,16 @@ var handlebars = require('express3-handlebars').create({
 });
 var app = express();
 var formidable = require('formidable'),
-	jqupload = require('jquery-file-upload-middleware');
+	jqupload = require('jquery-file-upload-middleware'),
+	credentials = require('./credentials.js');
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 app.set('port', process.env.PORT || 3000);
 app.disable('x-powered-by');
 app.use(express.static(__dirname + '/public'));
-
+app.use(require('cookie-parser')(credentials.cookieSecret));
+app.use(require('express-session')());
 app.use(function(req, res, next) {
 	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
 	// console.error(req.query.toString() + res.locals.showTests);
@@ -55,6 +57,13 @@ function getWeatherData() {
 app.use(function(req, res, next) {
 	if (!res.locals.partials) res.locals.partials = {};
 	res.locals.partials.weather = getWeatherData();
+	next();
+});
+
+app.use(function(req, res, next) {
+	res.locals.flash = req.session.flash;
+	console.log(req.session.flash);
+	//delete req.session.flash;
 	next();
 });
 
@@ -168,6 +177,11 @@ app.get('/newsletter', function(req, res) {
 });
 
 app.get('/thank-you', function(req, res) {
+	// console.log(req.cookies.monster);
+	// console.log(req.signedCookies.signed_monster);
+	// res.clearCookie('signed_monster');
+	// console.log(req.session.currentDate);
+	// delete req.session.currentDate;
 	res.render('thank-you');
 });
 
@@ -179,6 +193,12 @@ app.post('/process', function(req, res) {
 	//res.json({success:true});
 	//res.redirect(303, 'thank-you' );
 	//console.log(req.xhr);
+	var name=req.body.name ||'',email = req.body.email||'';
+	req.session.flash={
+		type:'danger',
+		intro:'Validation error!',
+		message:'The email address '+ email +', you entered name is ' + name
+	};
 	if (req.xhr || req.accepts('json,html') === 'json') {
 		res.json({
 			success: true
@@ -190,6 +210,9 @@ app.post('/process', function(req, res) {
 
 app.get('/contest/vacation-photo', function(req, res) {
 	var now = new Date();
+	res.cookie('monster','nom nom',{maxAge:1000000});
+	res.cookie('signed_monster','1',{maxAge:1000000000, signed:true});
+	req.session.currentDate = new Date().toString();
 	res.render('contest/vacation-photo', {
 		year: now.getFullYear(),
 		month: now.getMonth()
